@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Test WebSocket</title>
+</head>
+<body>
+  <h1>Resultados en vivo</h1>
+  <input type="file" id="files" multiple />
+  <button onclick="upload()">Subir archivos</button>
+  <div id="resultados"></div>
+
+  <script>
+    const resultadosDiv = document.getElementById("resultados");
+    const socket = new WebSocket("ws://localhost:8000/ws");
+
+    socket.onmessage = function(event) {
+      const data = JSON.parse(event.data);
+      const item = document.createElement("p");
+      item.textContent = ` Resultado recibido para ${data.filename}: ${data.resultado}`;
+      resultadosDiv.appendChild(item);
+    };
+
+    function upload() {
+      const input = document.getElementById("files");
+      const formData = new FormData();
+      for (const file of input.files) {
+        formData.append("files", file);
+      }
+
+      fetch("http://localhost:8000/upload/", {
+        method: "POST",
+        body: formData
+      })
+      .then(resp => resp.json())
+      .then(data => console.log("Subida completada:", data));
+    }
+  </script>
+</body>
+</html>
